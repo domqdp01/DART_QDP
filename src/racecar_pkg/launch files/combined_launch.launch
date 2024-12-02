@@ -1,0 +1,21 @@
+<launch>
+    <!-- Nodo 1: Dart Simulator -->
+    <include file="$(find dart_simulator_pkg)/launch files/dart_simulator.launch" />
+
+    <!-- Nodo 2: Teleop Keyboard -->
+    <node 
+        pkg="racecar_pkg" 
+        type="teleop_keyboard.py" 
+        name="teleop_keyboard" 
+        output="screen">
+        <param name="pygame_version" value="1.9.6" />
+    </node>
+
+    <!-- Nodo 3: Record Sensors and Vicon -->
+    <node 
+        pkg="racecar_pkg" 
+        type="record_sensors_and_vicon.py" 
+        name="record_sensors_and_vicon" 
+        output="screen" />
+    
+</launch>

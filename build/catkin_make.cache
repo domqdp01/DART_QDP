@@ -1,0 +1,2 @@
+dart_simulator_pkg:lane_following_controller_pkg:lidar_ros:localization_and_mapping_pkg:racecar_pkg
+-DCATKIN_DEVEL_PREFIX=/home/domenico/DART/devel -DCMAKE_INSTALL_PREFIX=/home/domenico/DART/install -G Unix Makefiles

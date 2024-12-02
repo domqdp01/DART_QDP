@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- this launch file runs all nodes reuired to
+       control the jetracer with steering angle [rad] and velocity [m/s] inputs -->
+
+  <!-- set car number parameter to avoid having nodes with same name with multiple jetracers -->
+  <arg name="car_number_str_local" value="$(env car_number_str)"/>
+
+  <!-- run racecar -->
+  <node name="racecar_$(arg car_number_str_local)" pkg="racecar_pkg" type="racecar_universal.py"
+    output="screen"/>
+
+  <!-- arduino sensor reading -->
+  <node pkg="rosserial_python" type="serial_node.py" name="serial_node_$(arg car_number_str_local)" output="screen">
+  <!-- Add any required arguments here -->
+  <param name="port" value="/dev/arduino"/>
+  </node>
+
+  <!-- sensor publishing -->
+  <node name="publish_sensors_and_inputs_universal$(arg car_number_str_local)" pkg="racecar_pkg" type="publish_sensors_and_inputs_universal.py" output="screen"/>
+
+  <!-- convert steering angle to steering command inputs -->
+  <node name="steer_angle_2_steer_command_node$(arg car_number_str_local)" pkg="racecar_pkg" type="steering_angle_2_command.py"
+    output="screen"/>
+
+  <!-- longitudinal velocity controller-->
+  <node name="v_ref_controller$(arg car_number_str_local)" pkg="racecar_pkg" type="v_tracking_controller.py"
+    output="screen"/> 
+
+</launch>
