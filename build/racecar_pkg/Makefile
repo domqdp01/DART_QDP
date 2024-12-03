@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/domenico/DART/src
+CMAKE_SOURCE_DIR = /home/domenico/DART_QDP/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/domenico/DART/build
+CMAKE_BINARY_DIR = /home/domenico/DART_QDP/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -137,14 +137,14 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/domenico/DART/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/domenico/DART/build/CMakeFiles /home/domenico/DART/build/racecar_pkg/CMakeFiles/progress.marks
-	cd /home/domenico/DART/build && $(MAKE) -f CMakeFiles/Makefile2 racecar_pkg/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/domenico/DART/build/CMakeFiles 0
+	cd /home/domenico/DART_QDP/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/domenico/DART_QDP/build/CMakeFiles /home/domenico/DART_QDP/build/racecar_pkg/CMakeFiles/progress.marks
+	cd /home/domenico/DART_QDP/build && $(MAKE) -f CMakeFiles/Makefile2 racecar_pkg/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/domenico/DART_QDP/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/domenico/DART/build && $(MAKE) -f CMakeFiles/Makefile2 racecar_pkg/clean
+	cd /home/domenico/DART_QDP/build && $(MAKE) -f CMakeFiles/Makefile2 racecar_pkg/clean
 .PHONY : clean
 
 # The main clean target
@@ -154,17 +154,17 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/domenico/DART/build && $(MAKE) -f CMakeFiles/Makefile2 racecar_pkg/preinstall
+	cd /home/domenico/DART_QDP/build && $(MAKE) -f CMakeFiles/Makefile2 racecar_pkg/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/domenico/DART/build && $(MAKE) -f CMakeFiles/Makefile2 racecar_pkg/preinstall
+	cd /home/domenico/DART_QDP/build && $(MAKE) -f CMakeFiles/Makefile2 racecar_pkg/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/domenico/DART/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/domenico/DART_QDP/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Help Target
@@ -191,6 +191,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/domenico/DART/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/domenico/DART_QDP/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

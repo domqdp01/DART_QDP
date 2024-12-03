@@ -1,4 +1,4 @@
-prefix=/home/domenico/DART/install
+prefix=/home/domenico/DART_QDP/install
 
 Name: lidar_ros
 Description: Description of lidar_ros

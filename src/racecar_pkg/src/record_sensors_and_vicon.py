@@ -10,11 +10,17 @@ import datetime
 import os
 import rospkg
 import numpy as np
+from scipy.stats import truncnorm
+
+
+def truncated_gaussian(mean, std, lower, upper):
+    a, b = (lower - mean) / std, (upper - mean) / std
+    return truncnorm.rvs(a, b, loc=mean, scale=std)
 
 class record_input_and_sensor_data:
     def __init__(self, car_number):
 
-        self.folder_name = '/src/Data/NEW_FOLDER/'
+        self.folder_name = '/DATA/'
 
         self.car_number = car_number
         self.file_name = 'car_' + str(car_number) + '_Data'
@@ -64,7 +70,7 @@ class record_input_and_sensor_data:
 
     def odom_callback(self, msg):
         """Callback per il topic del Vicon"""
-        self.pos_x = msg.pose.pose.position.x
+        self.pos_x = msg.pose.pose.position.x 
         self.pos_y = msg.pose.pose.position.y
         q = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, 
                       msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])

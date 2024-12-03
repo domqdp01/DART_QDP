@@ -1,4 +1,4 @@
-prefix=/home/domenico/DART/devel
+prefix=/home/domenico/DART_QDP/devel
 
 Name: localization_and_mapping_pkg
 Description: Description of localization_and_mapping_pkg

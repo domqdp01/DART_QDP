@@ -67,14 +67,14 @@ set(lane_following_controller_pkg_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
-  set(lane_following_controller_pkg_SOURCE_PREFIX /home/domenico/DART/src/lane_following_controller_pkg)
-  set(lane_following_controller_pkg_DEVEL_PREFIX /home/domenico/DART/devel)
+  set(lane_following_controller_pkg_SOURCE_PREFIX /home/domenico/DART_QDP/src/lane_following_controller_pkg)
+  set(lane_following_controller_pkg_DEVEL_PREFIX /home/domenico/DART_QDP/devel)
   set(lane_following_controller_pkg_INSTALL_PREFIX "")
   set(lane_following_controller_pkg_PREFIX ${lane_following_controller_pkg_DEVEL_PREFIX})
 else()
   set(lane_following_controller_pkg_SOURCE_PREFIX "")
   set(lane_following_controller_pkg_DEVEL_PREFIX "")
-  set(lane_following_controller_pkg_INSTALL_PREFIX /home/domenico/DART/install)
+  set(lane_following_controller_pkg_INSTALL_PREFIX /home/domenico/DART_QDP/install)
   set(lane_following_controller_pkg_PREFIX ${lane_following_controller_pkg_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/domenico/DART/install/lib;/home/domenico/catkin_ws/devel/lib;/opt/ros/noetic/lib)
+    foreach(path /home/domenico/DART_QDP/install/lib;/home/domenico/DART_QDP/devel/lib;/home/domenico/catkin_ws/devel/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

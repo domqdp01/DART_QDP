@@ -1,4 +1,4 @@
-prefix=/home/domenico/DART/install
+prefix=/home/domenico/DART_QDP/install
 
 Name: lane_following_controller_pkg
 Description: Description of lane_following_controller_pkg

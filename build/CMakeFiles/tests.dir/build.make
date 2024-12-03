@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/domenico/DART/src
+CMAKE_SOURCE_DIR = /home/domenico/DART_QDP/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/domenico/DART/build
+CMAKE_BINARY_DIR = /home/domenico/DART_QDP/build
 
 # Utility rule file for tests.
 
@@ -67,6 +67,6 @@ CMakeFiles/tests.dir/clean:
 .PHONY : CMakeFiles/tests.dir/clean
 
 CMakeFiles/tests.dir/depend:
-	cd /home/domenico/DART/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/domenico/DART/src /home/domenico/DART/src /home/domenico/DART/build /home/domenico/DART/build /home/domenico/DART/build/CMakeFiles/tests.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/domenico/DART_QDP/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/domenico/DART_QDP/src /home/domenico/DART_QDP/src /home/domenico/DART_QDP/build /home/domenico/DART_QDP/build /home/domenico/DART_QDP/build/CMakeFiles/tests.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/tests.dir/depend
 

@@ -1,21 +1,21 @@
 Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
-Change Dir: /home/domenico/DART/build/CMakeFiles/CMakeTmp
+Change Dir: /home/domenico/DART_QDP/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/make cmTC_d553e/fast && /usr/bin/make -f CMakeFiles/cmTC_d553e.dir/build.make CMakeFiles/cmTC_d553e.dir/build
-make[1]: ingresso nella directory «/home/domenico/DART/build/CMakeFiles/CMakeTmp»
-Building C object CMakeFiles/cmTC_d553e.dir/src.c.o
-/usr/bin/cc   -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_d553e.dir/src.c.o   -c /home/domenico/DART/build/CMakeFiles/CMakeTmp/src.c
-Linking C executable cmTC_d553e
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d553e.dir/link.txt --verbose=1
-/usr/bin/cc  -DCMAKE_HAVE_LIBC_PTHREAD    -rdynamic CMakeFiles/cmTC_d553e.dir/src.c.o  -o cmTC_d553e 
-/usr/bin/ld: CMakeFiles/cmTC_d553e.dir/src.c.o: in function `main':
+Run Build Command(s):/usr/bin/make cmTC_e6455/fast && /usr/bin/make -f CMakeFiles/cmTC_e6455.dir/build.make CMakeFiles/cmTC_e6455.dir/build
+make[1]: ingresso nella directory «/home/domenico/DART_QDP/build/CMakeFiles/CMakeTmp»
+Building C object CMakeFiles/cmTC_e6455.dir/src.c.o
+/usr/bin/cc   -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_e6455.dir/src.c.o   -c /home/domenico/DART_QDP/build/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_e6455
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e6455.dir/link.txt --verbose=1
+/usr/bin/cc  -DCMAKE_HAVE_LIBC_PTHREAD    -rdynamic CMakeFiles/cmTC_e6455.dir/src.c.o  -o cmTC_e6455 
+/usr/bin/ld: CMakeFiles/cmTC_e6455.dir/src.c.o: in function `main':
 src.c:(.text+0x46): undefined reference to `pthread_create'
 /usr/bin/ld: src.c:(.text+0x52): undefined reference to `pthread_detach'
 /usr/bin/ld: src.c:(.text+0x63): undefined reference to `pthread_join'
 collect2: error: ld returned 1 exit status
-make[1]: *** [CMakeFiles/cmTC_d553e.dir/build.make:87: cmTC_d553e] Errore 1
-make[1]: uscita dalla directory «/home/domenico/DART/build/CMakeFiles/CMakeTmp»
-make: *** [Makefile:121: cmTC_d553e/fast] Errore 2
+make[1]: *** [CMakeFiles/cmTC_e6455.dir/build.make:87: cmTC_e6455] Errore 1
+make[1]: uscita dalla directory «/home/domenico/DART_QDP/build/CMakeFiles/CMakeTmp»
+make: *** [Makefile:121: cmTC_e6455/fast] Errore 2
 
 
 Source file was:
@@ -39,20 +39,20 @@ int main(void)
 }
 
 Determining if the function pthread_create exists in the pthreads failed with the following output:
-Change Dir: /home/domenico/DART/build/CMakeFiles/CMakeTmp
+Change Dir: /home/domenico/DART_QDP/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/make cmTC_2f922/fast && /usr/bin/make -f CMakeFiles/cmTC_2f922.dir/build.make CMakeFiles/cmTC_2f922.dir/build
-make[1]: ingresso nella directory «/home/domenico/DART/build/CMakeFiles/CMakeTmp»
-Building C object CMakeFiles/cmTC_2f922.dir/CheckFunctionExists.c.o
-/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_2f922.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.16/Modules/CheckFunctionExists.c
-Linking C executable cmTC_2f922
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2f922.dir/link.txt --verbose=1
-/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_2f922.dir/CheckFunctionExists.c.o  -o cmTC_2f922  -lpthreads 
+Run Build Command(s):/usr/bin/make cmTC_8219c/fast && /usr/bin/make -f CMakeFiles/cmTC_8219c.dir/build.make CMakeFiles/cmTC_8219c.dir/build
+make[1]: ingresso nella directory «/home/domenico/DART_QDP/build/CMakeFiles/CMakeTmp»
+Building C object CMakeFiles/cmTC_8219c.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_8219c.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.16/Modules/CheckFunctionExists.c
+Linking C executable cmTC_8219c
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8219c.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_8219c.dir/CheckFunctionExists.c.o  -o cmTC_8219c  -lpthreads 
 /usr/bin/ld: impossibile trovare -lpthreads
 collect2: error: ld returned 1 exit status
-make[1]: *** [CMakeFiles/cmTC_2f922.dir/build.make:87: cmTC_2f922] Errore 1
-make[1]: uscita dalla directory «/home/domenico/DART/build/CMakeFiles/CMakeTmp»
-make: *** [Makefile:121: cmTC_2f922/fast] Errore 2
+make[1]: *** [CMakeFiles/cmTC_8219c.dir/build.make:87: cmTC_8219c] Errore 1
+make[1]: uscita dalla directory «/home/domenico/DART_QDP/build/CMakeFiles/CMakeTmp»
+make: *** [Makefile:121: cmTC_8219c/fast] Errore 2
 
 
 

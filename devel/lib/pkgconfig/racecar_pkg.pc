@@ -1,4 +1,4 @@
-prefix=/home/domenico/DART/devel
+prefix=/home/domenico/DART_QDP/devel
 
 Name: racecar_pkg
 Description: Description of racecar_pkg

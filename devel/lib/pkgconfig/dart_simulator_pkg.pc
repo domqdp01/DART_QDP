@@ -1,8 +1,8 @@
-prefix=/home/domenico/DART/devel
+prefix=/home/domenico/DART_QDP/devel
 
 Name: dart_simulator_pkg
 Description: Description of dart_simulator_pkg
 Version: 0.0.0
-Cflags: -I/home/domenico/DART/devel/include
+Cflags: -I/home/domenico/DART_QDP/devel/include
 Libs: -L${prefix}/lib 
 Requires: 

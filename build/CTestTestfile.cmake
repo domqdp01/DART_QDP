@@ -1,6 +1,6 @@
 # CMake generated Testfile for 
-# Source directory: /home/domenico/DART/src
-# Build directory: /home/domenico/DART/build
+# Source directory: /home/domenico/DART_QDP/src
+# Build directory: /home/domenico/DART_QDP/build
 # 
 # This file includes the relevant testing commands required for 
 # testing this directory and lists subdirectories to be tested as well.
