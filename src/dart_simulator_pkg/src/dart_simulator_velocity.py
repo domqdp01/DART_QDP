@@ -46,6 +46,88 @@ def kinematic_bicycle(t, z):
     xdot4 = acc_x
     return np.array([0, 0, xdot1, xdot2, xdot3, xdot4, 0, 0])
 
+def slip_angles(vx,vy,w,steering_angle):
+    # evaluate slip angles
+    Vy_wheel_r = vy - l_r * w # lateral velocity of the rear wheel
+    Vx_wheel_r = vx 
+    Vx_correction_term_r = 0.1*np.exp(-100*Vx_wheel_r**2) # this avoids the vx term being 0 and having undefined angles for small velocities
+    # note that it will be negligible outside the vx = [-0.2,0.2] m/s interval.
+    Vx_wheel_r = Vx_wheel_r + Vx_correction_term_r
+    alpha_r = - np.arctan(Vy_wheel_r/ Vx_wheel_r) / np.pi * 180  #converting alpha into degrees
+                
+    # front slip angle
+    Vy_wheel_f = (vy + w * l_f) #* np.cos(steering_angle) - vx * np.sin(steering_angle)
+    Vx_wheel_f =  vx
+    Vx_correction_term_f = 0.1*np.exp(-100*Vx_wheel_f**2)
+    Vx_wheel_f = Vx_wheel_f + Vx_correction_term_f
+    alpha_f = -( -steering_angle + np.arctan2(Vy_wheel_f, Vx_wheel_f)) / np.pi * 180  #converting alpha into degrees
+    return alpha_f, alpha_r
+
+def lateral_tire_forces(alpha_f,alpha_r):
+    #front tire Pacejka tire model
+    d =  2.9751534461975098
+    c =  0.6866822242736816
+    b =  0.29280123114585876
+    e =  -3.0720443725585938
+    #rear tire linear model
+    c_r = 0.38921865820884705
+
+    F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f))))
+    F_y_r = c_r * alpha_r
+    return F_y_f, F_y_r
+
+def dynamic_bicycle(t,z):  # RK4 wants a function that takes as input time and state
+    #z = throttle delta x y theta vx vy w
+    u = z[0:2]
+    x = z[2:]
+    th = u[0]
+    vx = x[3]
+    vy = x[4]
+    w = x[5]
+
+    # evaluate steering angle 
+    steering_angle = steer_angle(u[1])
+
+    # evaluare slip angles
+    alpha_f,alpha_r =slip_angles(vx,vy,w,steering_angle)
+
+    #evaluate forward force
+    Fx_wheels = motor_force(th,vx) + friction(vx)
+    # assuming equally shared force among wheels
+    Fx_f = Fx_wheels/2
+    Fx_r = Fx_wheels/2
+
+    # evaluate lateral tire forces
+    F_y_f, F_y_r = lateral_tire_forces(alpha_f,alpha_r)
+
+    # solve equations of motion for the rigid body
+    A = np.array([[+np.cos(steering_angle),1,-np.sin(steering_angle),0],
+                  [+np.sin(steering_angle),0, np.cos(steering_angle),1],
+                  [l_f*np.sin(steering_angle),0             ,l_f     ,-l_r]])
+
+    b = np.array([Fx_f,
+                  Fx_r,
+                  F_y_f,
+                  F_y_r])
+
+    [Fx, Fy, M] = A @ b
+
+    acc_x =  Fx / m  + w * vy# acceleration in the longitudinal direction
+    acc_y =  Fy / m  - w * vx# acceleration in the latera direction
+    acc_w =  M / Jz # acceleration yaw
+
+
+    xdot1 = vx * np.cos(x[2]) - vy * np.sin(x[2])
+    xdot2 = vx * np.sin(x[2]) + vy * np.cos(x[2])
+    xdot3 = w
+    xdot4 = acc_x  
+    xdot5 = acc_y  
+    xdot6 = acc_w  
+
+    # assemble derivatives [th, stter, x y theta vx vy omega], NOTE: # for RK4 you need to supply also the derivatives of the inputs (that are set to zero)
+    zdot = np.array([0,0, xdot1, xdot2, xdot3, xdot4, xdot5, xdot6]) 
+    return zdot
+
 class Forward_intergrate_vehicle:
     def __init__(self, car_number, vehicle_model, initial_state, dt_int):
         self.safety_value = 0

@@ -406,7 +406,7 @@ class Forward_intergrate_vehicle:
         self.vy_publisher.publish(vy_with_noise)
         self.omega_publisher.publish(omega_with_noise)
 
-
+        
         #publish rviz vehicle visualization
         rviz_message = PoseStamped()
         # to plot centre of arrow as centre of vehicle shift the centre back by l_r
@@ -463,3 +463,6 @@ if __name__ == '__main__':
 
     except rospy.ROSInterruptException:
         pass
+
+
+# Here, noise was added in the sensor simulator and in Rviz
