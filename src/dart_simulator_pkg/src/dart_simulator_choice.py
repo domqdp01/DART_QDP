@@ -296,6 +296,76 @@ class Forward_intergrate_vehicle:
         vicon_msg = PoseWithCovarianceStamped()
         vicon_msg.header.stamp = rospy.Time.now()
         vicon_msg.header.frame_id = 'map'
+        vicon_msg.pose.pose.position.x = self.state[0] 
+        vicon_msg.pose.pose.position.y = self.state[1] 
+        vicon_msg.pose.pose.position.z = 0.0
+        quaternion = tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, self.state[2])
+        #type(pose) = geometry_msgs.msg.Pose
+        vicon_msg.pose.pose.orientation.x = quaternion[0]
+        vicon_msg.pose.pose.orientation.y = quaternion[1]
+        vicon_msg.pose.pose.orientation.z = quaternion[2]
+        vicon_msg.pose.pose.orientation.w = quaternion[3]
+        self.pub_motion_capture_state.publish(vicon_msg)
+
+        # simulate on-board sensor data
+        sensor_msg = Float32MultiArray()
+        #                  current,voltage,IMU[0](acc x),IMU[1] (acc y),IMU[2] (omega rads),velocity, safety, throttle, steering
+        elapsed_time = rospy.Time.now() - self.initial_time
+        sensor_msg.data = [elapsed_time.to_sec(), 0.0, 0.0, 0.0, 0.0, z_next[7], z_next[5], self.safety_value,self.throttle,self.steering]
+        self.pub_sens_input.publish(sensor_msg)
+
+
+        #publish messages for rviz visualization purposes
+        self.vx_publisher.publish(self.state[3])
+        self.vy_publisher.publish(self.state[4])
+        self.omega_publisher.publish(self.state[5])
+
+
+        #publish rviz vehicle visualization
+        rviz_message = PoseStamped()
+        # to plot centre of arrow as centre of vehicle shift the centre back by l_r
+        rviz_message.pose.position.x = vicon_msg.pose.pose.position.x - l_r/2 * np.cos(self.state[2])
+        rviz_message.pose.position.y = vicon_msg.pose.pose.position.y - l_r/2 * np.sin(self.state[2])
+        rviz_message.pose.orientation = vicon_msg.pose.pose.orientation
+
+        # frame data is necessary for rviz
+        rviz_message.header.frame_id = 'map'
+        self.pub_rviz_vehicle_visualization.publish(rviz_message)
+
+
+
+    def forward_integrate_1_timestep_noise(self):
+
+        # perform forwards integration
+        t0 = 0
+        t_bound = self.dt_int
+
+        # only activates if safety is off
+        y0 = np.array([self.throttle, self.steering] + self.state)
+
+        # forwards integrate using RK4
+        RK45_output = integrate.RK45(self.vehicle_model, t0, y0, t_bound)
+        while RK45_output.status != 'finished':
+            RK45_output.step()
+
+        # z = throttle delta x y theta vx vy w
+        z_next = RK45_output.y
+        self.state = z_next[2:].tolist()
+        # non - elegant fix: if using kinematic bicycle that does not have Vy w_dot, assign it from kinematic realtions
+        if self.vehicle_model == kinematic_bicycle:
+            # evaluate vy w from kinematic relations (so this can't be in the integrating function)
+            steering_angle = steer_angle(z_next[1])
+            w = z_next[5] * np.tan(steering_angle) / l
+            vy = l_r * w
+            self.state[4] = vy
+            self.state[5] = w
+
+
+
+        # simulate vicon motion capture system output
+        vicon_msg = PoseWithCovarianceStamped()
+        vicon_msg.header.stamp = rospy.Time.now()
+        vicon_msg.header.frame_id = 'map'
         vicon_msg.pose.pose.position.x = self.state[0] + truncnorm(0, 0.3, -0.1, 0.1).rvs()
         vicon_msg.pose.pose.position.y = self.state[1] + truncnorm(0, 0.3, -0.1, 0.1).rvs()
         vicon_msg.pose.pose.position.z = 0.0
@@ -304,7 +374,7 @@ class Forward_intergrate_vehicle:
         vicon_msg.pose.pose.orientation.x = quaternion[0] 
         vicon_msg.pose.pose.orientation.y = quaternion[1] 
         vicon_msg.pose.pose.orientation.z = quaternion[2]
-        vicon_msg.pose.pose.orientation.w = quaternion[3] +  2 * truncnorm(0, 0.3, -0.1, 0.1).rvs()
+        vicon_msg.pose.pose.orientation.w = quaternion[3] + 2 * truncnorm(0, 0.3, -0.1, 0.1).rvs()
         self.pub_motion_capture_state.publish(vicon_msg)
 
         # simulate on-board sensor data
@@ -318,8 +388,8 @@ class Forward_intergrate_vehicle:
             0.0, 
             0.0, 
             0.0,
-            z_next[7] + truncnorm(0, 0.3, -0.1, 0.1).rvs(),  
-            z_next[5] + truncnorm(0, 0.3, -0.1, 0.1).rvs(), 
+            z_next[7] + 1.5 * truncnorm(0, 0.3, -0.1, 0.1).rvs(),  
+            z_next[5] + 1.5 * truncnorm(0, 0.3, -0.1, 0.1).rvs(), 
             self.safety_value,
             self.throttle,
             self.steering
@@ -351,41 +421,44 @@ class Forward_intergrate_vehicle:
 
 
 
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     try:
-        rospy.init_node('Vehicles_Integrator_node' , anonymous=True)
+        rospy.init_node('Vehicles_Integrator_node', anonymous=True)
+
+        # Chiedi all'utente di scegliere l'opzione
+        user_choice = ''
+        while user_choice not in ['1', '2']:
+            print("Choose the simulation mode:")
+            print("1: Simulator without noise.")
+            print("2: Simulator with noise.")
+            user_choice = input("Enter your choice (1 or 2): ")
+
+        # Configura il metodo di integrazione in base alla scelta dell'utente
+        if user_choice == '1':
+            print("You selected: Simulator without noise.")
+            integration_method = lambda vehicle: vehicle.forward_integrate_1_timestep()
+        elif user_choice == '2':
+            print("You selected: Simulator with noise.")
+            integration_method = lambda vehicle: vehicle.forward_integrate_1_timestep_noise()
 
         dt_int = 0.01
         vehicle_model = dynamic_bicycle
-        
 
-        #vehicle 1         #x y theta vx vy w
-        initial_state_1 = [0, 0, 0, 0.0, 0, 0]
+        # Inizializza il primo veicolo
+        initial_state_1 = [0, 0, 0, 0.0, 0, 0]  # x, y, theta, vx, vy, omega
         car_number_1 = 1
         vehicle_1_integrator = Forward_intergrate_vehicle(car_number_1, vehicle_model, initial_state_1, dt_int)
 
-
         vehicles_list = [vehicle_1_integrator]
 
-
-        #set up GUI manager
+        # Configura il gestore della GUI
         Forward_intergrate_GUI_manager_obj = Forward_intergrate_GUI_manager(vehicles_list)
 
-        # forwards integrate
+        # Ciclo principale di integrazione
         rate = rospy.Rate(1 / dt_int)
         while not rospy.is_shutdown():
-            # forwards integrate all vehicles
-            for i in range(len(vehicles_list)):
-                vehicles_list[i].forward_integrate_1_timestep()
-            # wait one loop time
+            for vehicle in vehicles_list:
+                integration_method(vehicle)
             rate.sleep()
 
     except rospy.ROSInterruptException:

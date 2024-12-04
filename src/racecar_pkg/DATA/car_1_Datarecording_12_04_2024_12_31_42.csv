@@ -1,0 +1,2 @@
+elapsed time sensors,current,voltage,acc x (IMU),acc y (IMU),W (IMU),vel encoder,safety_value,throttle,steering,vicon time,vicon x,vicon y,vicon yaw,velocity x,velocity y
+0.025877952575683594,0.0,0.0,0.0,0.0,-0.10977055132389069,-0.12488306313753128,0.0,0.0,0.0,1733311905.1808784,-0.07037284964255597,-0.08306874215634111,-8.213912394569945e-19,0.0,0.0

@@ -343,7 +343,7 @@ if __name__ == '__main__':
         rospy.init_node('Vehicles_Integrator_node' , anonymous=True)
 
         dt_int = 0.01
-        vehicle_model = kinematic_bicycle
+        vehicle_model = dynamic_bicycle
         
 
         #vehicle 1         #x y theta vx vy w
