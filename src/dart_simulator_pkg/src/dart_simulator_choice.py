@@ -373,7 +373,7 @@ class Forward_intergrate_vehicle:
         #type(pose) = geometry_msgs.msg.Pose
         vicon_msg.pose.pose.orientation.x = quaternion[0] 
         vicon_msg.pose.pose.orientation.y = quaternion[1] 
-        vicon_msg.pose.pose.orientation.z = quaternion[2]
+        vicon_msg.pose.pose.orientation.z = quaternion[2] + 2 * truncnorm(0, 0.3, -0.1, 0.1).rvs()
         vicon_msg.pose.pose.orientation.w = quaternion[3] + 2 * truncnorm(0, 0.3, -0.1, 0.1).rvs()
         self.pub_motion_capture_state.publish(vicon_msg)
 
