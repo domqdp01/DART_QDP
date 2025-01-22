@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 
 import rospy
+import numpy as np
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf.transformations import euler_from_quaternion
 from std_msgs.msg import Float32MultiArray, Float32
+from funct_fin import steer_angle, rolling_friction, motor_force, F_friction_due_to_steering, slip_angles, lateral_tire_forces, friction
+from discretization_function import compute_discrete_function_terms_single_step_euler
+from continuous_matrix_function import continuous_matrices
+
 
 class ViconAndSensorListener:
     def __init__(self):
@@ -55,22 +60,34 @@ class ViconAndSensorListener:
         # Convert quaternion to Euler angles (roll, pitch, yaw)
         roll, pitch, yaw = euler_from_quaternion(quaternion)
 
+        x = self.pose_data.pose.pose.position.x
+        y = self.pose_data.pose.pose.position.y
+        vx = self.sensor_data.data[6]
+        vy = self.vy_data
+        w = self.sensor_data.data[5]
+        th = self.sensor_data.data[8]
+        steering_input = self.sensor_data.data[9]
+
+        delta = steer_angle(steering_input)
+        z = np.array([[vx], [vy], [w]])
+        u = np.array([th, delta])
         # Construct the log message
         message = (
             "\n-------------------\n"
-            f"x : {self.pose_data.pose.pose.position.x} m\n"
-            f"y : {self.pose_data.pose.pose.position.y} m\n"
-            f"yaw : {yaw} rad\n"
-            f"v_x: {self.sensor_data.data[6]:.2f} m/s\n"
-            f"v_y: {self.vy_data:.2f} m/s\n"
-            f"Omega: {self.sensor_data.data[5]:.2f} rad/s\n"
-            f"Throttle: {self.sensor_data.data[8]:.2f}\n"
-            f"Steering: {self.sensor_data.data[9]:.2f}\n"
+            f"x : {x:.2f} m\n"
+            f"y : {y:.2f} m\n"
+            f"yaw : {yaw:.2f} rad\n"
+            f"v_x: {vx:.2f} m/s\n"
+            f"v_y: {vy:.2f} m/s\n"
+            f"Omega: {w:.2f} rad/s\n"
+            f"Throttle: {th:.2f}\n"
+            f"Steering: {steering_input:.2f}\n"
             "-------------------\n"
         )
 
         # Log the message
         rospy.loginfo(message)
+        
 
 
 if __name__ == '__main__':
