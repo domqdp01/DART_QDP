@@ -3,7 +3,7 @@
     <node pkg="rviz" type="rviz" name="rviz_node" args="-d $(find dart_simulator_pkg)/rviz_configs/dart_visualization_config.rviz" />
 
     <!-- Dart Simulator Node -->
-    <node pkg="dart_simulator_pkg" type="dart_simulator_noise.py" name="dart_simulator_node" output="screen" />
+    <node pkg="dart_simulator_pkg" type="dart_simulator_noise_real.py" name="dart_simulator_node" output="screen" />
 
     <!-- Rqt Reconfigure -->
     <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="rqt_reconfigure_forwards_int" />
@@ -12,5 +12,5 @@
     <node pkg="racecar_pkg" type="teleop_keyboard.py" name="teleop_node" output="screen" />
 
     <!-- Record Sensors and Vicon Node -->
-    <node pkg="racecar_pkg" type="record_sensors_and_vicon.py" name="record_sensors_and_vicon_node" output="screen" />
+    <node pkg="racecar_pkg" type="record_velocity.py" name="record_sensors_and_vicon_node" output="screen" />
 </launch>

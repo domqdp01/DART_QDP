@@ -13,11 +13,8 @@ from dart_simulator_pkg.cfg import dart_simulator_guiConfig
 from tf.transformations import quaternion_from_euler
 from scipy.stats import truncnorm
 
-def truncated_gaussian(mean, std, lower, upper):
-    a, b = (lower - mean) / std, (upper - mean) / std
-    return truncnorm.rvs(a, b, loc=mean, scale=std)
-
-
+n_up = 0.5
+n_low = - n_up
 # define dynamic models
 # hard coded vehicle parameters
 l = 0.175
@@ -82,8 +79,10 @@ def lateral_tire_forces(alpha_f,alpha_r):
     #rear tire linear model
     c_r = 0.38921865820884705
 
-    F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f))))
-    F_y_r = c_r * alpha_r
+    F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f)))) + truncnorm(2 * n_low, n_up, loc=0, scale=1).rvs()
+    # F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f)))) + np.random.uniform(7 * n_low, 0)
+    F_y_r = c_r * alpha_r + truncnorm(n_low, 0.75 * n_up, loc=0, scale=0.5).rvs()
+    # F_y_r = c_r * alpha_r + np.random.uniform(6 * n_low, 4 * n_up)
     return F_y_f, F_y_r
 
 
@@ -137,10 +136,13 @@ def dynamic_bicycle(t,z):  # RK4 wants a function that takes as input time and s
     alpha_f,alpha_r =slip_angles(vx,vy,w,steering_angle)
 
     #evaluate forward force
-    Fx_wheels = motor_force(th,vx) + friction(vx)
+    Fx_wheels = motor_force(th,vx) + friction(vx) + truncnorm(n_low * 0.75, n_up * 0.75, loc=0, scale=0.9).rvs()
+    # Fx_wheels = motor_force(th,vx) + friction(vx) 
     # assuming equally shared force among wheels
+    # Fx_f = Fx_wheels/2 + np.random.uniform(7 * n_low, 5 * n_up)
+    # Fx_r = Fx_wheels/2 + + np.random.uniform(6 * n_low, 6 * n_up)
     Fx_f = Fx_wheels/2
-    Fx_r = Fx_wheels/2
+    Fx_r = Fx_wheels/2      
 
     # evaluate lateral tire forces
     F_y_f, F_y_r = lateral_tire_forces(alpha_f,alpha_r)
@@ -334,233 +336,43 @@ class Forward_intergrate_vehicle:
 
 
 
-    def forward_integrate_1_timestep_trunc(self):
-        # perform forwards integration
-        t0 = 0
-        t_bound = self.dt_int
-
-        # only activates if safety is off
-        y0 = np.array([self.throttle, self.steering] + self.state)
-
-        # forwards integrate using RK4
-        RK45_output = integrate.RK45(self.vehicle_model, t0, y0, t_bound)
-        while RK45_output.status != 'finished':
-            RK45_output.step()
-
-        # z = throttle delta x y theta vx vy w
-        z_next = RK45_output.y
-        self.state = z_next[2:].tolist()
-
-        # non-elegant fix: if using kinematic bicycle that does not have Vy, w_dot, assign them from kinematic relations
-        if self.vehicle_model == kinematic_bicycle:
-            # evaluate vy, w from kinematic relations (so this can't be in the integrating function)
-            steering_angle = steer_angle(z_next[1])
-            w = z_next[5] * np.tan(steering_angle) / l
-            vy = l_r * w
-            self.state[4] = vy
-            self.state[5] = w
-
-        # simulate vicon motion capture system output
-        vicon_msg = PoseWithCovarianceStamped()
-        vicon_msg.header.stamp = rospy.Time.now()
-        vicon_msg.header.frame_id = 'map'
-
-        # Add truncated Gaussian noise to position
-        vicon_msg.pose.pose.position.x = self.state[0] + truncated_gaussian(0, 0.3, -0.1, 0.1)
-        vicon_msg.pose.pose.position.y = self.state[1] + truncated_gaussian(0, 0.3, -0.1, 0.1)
-        vicon_msg.pose.pose.position.z = 0.0
-
-        # Add truncated Gaussian noise to quaternion
-        quaternion = tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, self.state[2])
-        noisy_quaternion = [
-            quaternion[0],
-            quaternion[1],
-            quaternion[2] + truncated_gaussian(0, 0.3, -0.1, 0.1),
-            quaternion[3] + truncated_gaussian(0, 0.3, -0.1, 0.1)
-        ]
-        norm = np.linalg.norm(noisy_quaternion)  # Normalize quaternion
-        noisy_quaternion = [q / norm for q in noisy_quaternion]
-
-        vicon_msg.pose.pose.orientation.x = noisy_quaternion[0]
-        vicon_msg.pose.pose.orientation.y = noisy_quaternion[1]
-        vicon_msg.pose.pose.orientation.z = noisy_quaternion[2]
-        vicon_msg.pose.pose.orientation.w = noisy_quaternion[3]
-        self.pub_motion_capture_state.publish(vicon_msg)
-
-        # simulate on-board sensor data
-        sensor_msg = Float32MultiArray()
-        # Current, voltage, IMU[0](acc x), IMU[1] (acc y), IMU[2] (omega rads), velocity, safety, throttle, steering
-        elapsed_time = rospy.Time.now() - self.initial_time
-        sensor_msg.data = [
-            elapsed_time.to_sec(),
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            z_next[7] + truncated_gaussian(0, 0.3, -0.1, 0.1),
-            z_next[5] + truncated_gaussian(0, 0.3, -0.1, 0.1),
-            self.safety_value,
-            self.throttle,
-            self.steering
-        ]
-        self.pub_sens_input.publish(sensor_msg)
-
-        # publish messages for rviz visualization purposes
-        vx_with_noise = self.state[3] + truncated_gaussian(0, 0.3, -0.1, 0.1)
-        vy_with_noise = self.state[4] + truncated_gaussian(0, 0.3, -0.1, 0.1)
-        omega_with_noise = self.state[5] + truncated_gaussian(0, 0.3, -0.1, 0.1)
-
-        self.vx_publisher.publish(vx_with_noise)
-        self.vy_publisher.publish(vy_with_noise)
-        self.omega_publisher.publish(omega_with_noise)
-
-        # publish rviz vehicle visualization
-        rviz_message = PoseStamped()
-        # to plot center of arrow as center of vehicle, shift the center back by l_r
-        rviz_message.pose.position.x = vicon_msg.pose.pose.position.x - l_r / 2 * np.cos(self.state[2])
-        rviz_message.pose.position.y = vicon_msg.pose.pose.position.y - l_r / 2 * np.sin(self.state[2])
-        rviz_message.pose.orientation = vicon_msg.pose.pose.orientation
-
-        # frame data is necessary for rviz
-        rviz_message.header.frame_id = 'map'
-        self.pub_rviz_vehicle_visualization.publish(rviz_message)
-
-
-    
-    def forward_integrate_1_timestep_flat(self):
-        n_up = 0.25
-        n_low = -n_up 
-        # perform forwards integration
-        t0 = 0
-        t_bound = self.dt_int
-
-        # only activates if safety is off
-        y0 = np.array([self.throttle, self.steering] + self.state)
-
-        # forwards integrate using RK4
-        RK45_output = integrate.RK45(self.vehicle_model, t0, y0, t_bound)
-        while RK45_output.status != 'finished':
-            RK45_output.step()
-
-        # z = throttle delta x y theta vx vy w
-        z_next = RK45_output.y
-        self.state = z_next[2:].tolist()
-        # non - elegant fix: if using kinematic bicycle that does not have Vy w_dot, assign it from kinematic realtions
-        if self.vehicle_model == kinematic_bicycle:
-            # evaluate vy w from kinematic relations (so this can't be in the integrating function)
-            steering_angle = steer_angle(z_next[1])
-            w = z_next[5] * np.tan(steering_angle) / l
-            vy = l_r * w
-            self.state[4] = vy
-            self.state[5] = w
 
 
 
-        # simulate vicon motion capture system output
-        vicon_msg = PoseWithCovarianceStamped()
-        vicon_msg.header.stamp = rospy.Time.now()
-        vicon_msg.header.frame_id = 'map'
-        vicon_msg.pose.pose.position.x = self.state[0] + np.random.uniform(n_low, n_up)
-        vicon_msg.pose.pose.position.y = self.state[1] + np.random.uniform(n_low, n_up)
-        vicon_msg.pose.pose.position.z = 0.0
-        quaternion = tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, self.state[2])
-        #type(pose) = geometry_msgs.msg.Pose
-        vicon_msg.pose.pose.orientation.x = quaternion[0] 
-        vicon_msg.pose.pose.orientation.y = quaternion[1] 
-        vicon_msg.pose.pose.orientation.z = quaternion[2] + np.random.uniform(n_low, n_up)
-        vicon_msg.pose.pose.orientation.w = quaternion[3] + np.random.uniform(n_low, n_up)
-        self.pub_motion_capture_state.publish(vicon_msg)
-
-        # simulate on-board sensor data
-        sensor_msg = Float32MultiArray()
-        #                  current,voltage,IMU[0](acc x),IMU[1] (acc y),IMU[2] (omega rads),velocity, safety, throttle, steering
-        elapsed_time = rospy.Time.now() - self.initial_time
-        ## ADDED NOISE ON THE SENSOR
-        sensor_msg.data = [
-            elapsed_time.to_sec(),
-            0.0, 
-            0.0, 
-            0.0, 
-            0.0,
-            z_next[7] + np.random.uniform(n_low, n_up),  
-            z_next[5] + np.random.uniform(n_low, n_up), 
-            self.safety_value,
-            self.throttle,
-            self.steering
-        ]
-        self.pub_sens_input.publish(sensor_msg)
 
 
-        #publish messages for rviz visualization purposes
-        vx_with_noise = self.state[3] + np.random.uniform(n_low, n_up)
-        vy_with_noise = self.state[4] + np.random.uniform(n_low, n_up)
-        omega_with_noise = self.state[5] + np.random.uniform(n_low, n_up)
-
-        self.vx_publisher.publish(vx_with_noise)
-        self.vy_publisher.publish(vy_with_noise)
-        self.omega_publisher.publish(omega_with_noise)
-
-        
-        #publish rviz vehicle visualization
-        rviz_message = PoseStamped()
-        # to plot centre of arrow as centre of vehicle shift the centre back by l_r
-        rviz_message.pose.position.x = vicon_msg.pose.pose.position.x - l_r/2 * np.cos(self.state[2])
-        rviz_message.pose.position.y = vicon_msg.pose.pose.position.y - l_r/2 * np.sin(self.state[2])
-        rviz_message.pose.orientation = vicon_msg.pose.pose.orientation
-
-        # frame data is necessary for rviz
-        rviz_message.header.frame_id = 'map'
-        self.pub_rviz_vehicle_visualization.publish(rviz_message)
 
 
 
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('Vehicles_Integrator_node', anonymous=True)
-
-        # Chiedi all'utente di scegliere l'opzione
-        user_choice = ''
-        while user_choice not in ['1', '2', '3']:
-            print("Choose the simulation mode:")
-            print("1: Simulator without noise.")
-            print("2: Simulator with truncated gaussian noise.")
-            print("3: Simulator with flat unoform noise")
-            user_choice = input("Enter your choice (1, 2 or 3): ")
-
-        # Configura il metodo di integrazione in base alla scelta dell'utente
-        if user_choice == '1':
-            print("You selected: Simulator without noise.")
-            integration_method = lambda vehicle: vehicle.forward_integrate_1_timestep()
-        elif user_choice == '2':
-            print("You selected: Simulator with truncated gaussian noise.")
-            integration_method = lambda vehicle: vehicle.forward_integrate_1_timestep_trunc()
-        elif user_choice == '3':
-            print("You selected: Simulator with flat uniform noise.")
-            integration_method = lambda vehicle: vehicle.forward_integrate_1_timestep_flat()
+        rospy.init_node('Vehicles_Integrator_node' , anonymous=True)
 
         dt_int = 0.01
         vehicle_model = dynamic_bicycle
+        
 
-        # Inizializza il primo veicolo
-        initial_state_1 = [0, 0, 0, 0.0, 0, 0]  # x, y, theta, vx, vy, omega
+        #vehicle 1         #x y theta vx vy w
+        initial_state_1 = [0, 0, 0, 0.0, 0, 0]
         car_number_1 = 1
         vehicle_1_integrator = Forward_intergrate_vehicle(car_number_1, vehicle_model, initial_state_1, dt_int)
 
+
         vehicles_list = [vehicle_1_integrator]
 
-        # Configura il gestore della GUI
+
+        #set up GUI manager
         Forward_intergrate_GUI_manager_obj = Forward_intergrate_GUI_manager(vehicles_list)
 
-        # Ciclo principale di integrazione
+        # forwards integrate
         rate = rospy.Rate(1 / dt_int)
         while not rospy.is_shutdown():
-            for vehicle in vehicles_list:
-                integration_method(vehicle)
+            # forwards integrate all vehicles
+            for i in range(len(vehicles_list)):
+                vehicles_list[i].forward_integrate_1_timestep()
+            # wait one loop time
             rate.sleep()
 
     except rospy.ROSInterruptException:
         pass
-
-
-# Here, noise was added in the sensor simulator and in Rviz

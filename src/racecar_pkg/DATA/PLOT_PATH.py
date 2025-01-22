@@ -6,17 +6,23 @@ import matplotlib.gridspec as gridspec
 # File path for the dataset
 # file_path = 'car_1_Datarecording_12_06_2024_09_48_04.csv'
 # file_path = 'circle.csv'
-file_path = 'circle_fin.csv'
+# file_path = 'circle_fin.csv'
+# file_path = 'car_1_Datarecording_12_11_2024_14_22_11.csv'
+# file_path = 'car_1_Datarecording_12_11_2024_14_59_16.csv'
+# file_path = 'car_1_Datarecording_12_16_2024_14_41_11.csv'
+# file_path = 'car_1_Datarecording_12_16_2024_15_08_13.csv'
+# file_path = 'car_1_Datarecording_12_16_2024_15_17_32.csv'
+file_path = 'car_1_Datarecording_12_16_2024_15_42_03.csv'
 
 # Load the dataset
 df = pd.read_csv(file_path)
 
 # Extract relevant data columns
-vx = df['velocity x'].values           # Velocity in the x direction
+
 vy = df['velocity y'].values           # Velocity in the y direction
 x = df['vicon x'].values               # Position in x
 y = df['vicon y'].values               # Position in y
-v = df['vel encoder'].values           # Velocity from encoder
+vx = df['vel encoder'].values          # Velocity from encoder
 t = df['elapsed time sensors'].values  # Elapsed time from sensors
 yaw = df['vicon yaw'].values           # Yaw angle from vicon
 w = df['W (IMU)'].values               # Angular velocity (W) from IMU
@@ -33,7 +39,7 @@ ax1.scatter(x[-1], y[-1], color='black', s=30, label='Ending point', zorder=2)
 ax1.set_title("CAR SIMULATOR TRAJECTORY", fontsize=14)
 ax1.set_xlabel("X", fontsize=12)
 ax1.set_ylabel("Y", fontsize=12)
-ax1.legend(loc='best')
+ax1.legend(loc='upper left')
 
 # Second subplot: Yaw angle vs. time
 top_ax2 = fig.add_subplot(gs[1, 0])

@@ -13,11 +13,11 @@ from dart_simulator_pkg.cfg import dart_simulator_guiConfig
 from tf.transformations import quaternion_from_euler
 from scipy.stats import truncnorm
 
-def truncated_gaussian(mean, std, lower, upper):
-    a, b = (lower - mean) / std, (upper - mean) / std
-    return truncnorm.rvs(a, b, loc=mean, scale=std)
+n_up_x = 0.02
+n_low_x= - n_up_x
 
-
+n_up_y = 0.15
+n_low_y = -n_up_y
 # define dynamic models
 # hard coded vehicle parameters
 l = 0.175
@@ -82,8 +82,8 @@ def lateral_tire_forces(alpha_f,alpha_r):
     #rear tire linear model
     c_r = 0.38921865820884705
 
-    F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f))))
-    F_y_r = c_r * alpha_r
+    F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f)))) + np.random.uniform(n_low_y,n_up_y)
+    F_y_r = c_r * alpha_r + np.random.uniform(n_low_y,n_up_y)
     return F_y_f, F_y_r
 
 
@@ -137,7 +137,7 @@ def dynamic_bicycle(t,z):  # RK4 wants a function that takes as input time and s
     alpha_f,alpha_r =slip_angles(vx,vy,w,steering_angle)
 
     #evaluate forward force
-    Fx_wheels = motor_force(th,vx) + friction(vx)
+    Fx_wheels = motor_force(th,vx) + friction(vx) + np.random.uniform(n_low_x,n_up_x)
     # assuming equally shared force among wheels
     Fx_f = Fx_wheels/2
     Fx_r = Fx_wheels/2
@@ -157,10 +157,12 @@ def dynamic_bicycle(t,z):  # RK4 wants a function that takes as input time and s
 
     [Fx, Fy, M] = A @ b
 
+
     acc_x =  Fx / m  + w * vy# acceleration in the longitudinal direction
     acc_y =  Fy / m  - w * vx# acceleration in the latera direction
     acc_w =  M / Jz # acceleration yaw
 
+    # print(f"Fx: {Fx_f}, Fy: {F_y_f}")
 
     xdot1 = vx * np.cos(x[2]) - vy * np.sin(x[2])
     xdot2 = vx * np.sin(x[2]) + vy * np.cos(x[2])
@@ -296,45 +298,29 @@ class Forward_intergrate_vehicle:
         vicon_msg = PoseWithCovarianceStamped()
         vicon_msg.header.stamp = rospy.Time.now()
         vicon_msg.header.frame_id = 'map'
-        vicon_msg.pose.pose.position.x = self.state[0] + truncnorm(0, 0.3, -0.1, 0.1).rvs()
-        vicon_msg.pose.pose.position.y = self.state[1] + truncnorm(0, 0.3, -0.1, 0.1).rvs()
+        vicon_msg.pose.pose.position.x = self.state[0] 
+        vicon_msg.pose.pose.position.y = self.state[1] 
         vicon_msg.pose.pose.position.z = 0.0
         quaternion = tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, self.state[2])
         #type(pose) = geometry_msgs.msg.Pose
-        vicon_msg.pose.pose.orientation.x = quaternion[0] 
-        vicon_msg.pose.pose.orientation.y = quaternion[1] 
+        vicon_msg.pose.pose.orientation.x = quaternion[0]
+        vicon_msg.pose.pose.orientation.y = quaternion[1]
         vicon_msg.pose.pose.orientation.z = quaternion[2]
-        vicon_msg.pose.pose.orientation.w = quaternion[3] +  2 * truncnorm(0, 0.3, -0.1, 0.1).rvs()
+        vicon_msg.pose.pose.orientation.w = quaternion[3]
         self.pub_motion_capture_state.publish(vicon_msg)
 
         # simulate on-board sensor data
         sensor_msg = Float32MultiArray()
         #                  current,voltage,IMU[0](acc x),IMU[1] (acc y),IMU[2] (omega rads),velocity, safety, throttle, steering
         elapsed_time = rospy.Time.now() - self.initial_time
-        ## ADDED NOISE ON THE SENSOR
-        sensor_msg.data = [
-            elapsed_time.to_sec(),
-            0.0, 
-            0.0, 
-            0.0, 
-            0.0,
-            z_next[7] + truncnorm(0, 0.3, -0.1, 0.1).rvs(),  
-            z_next[5] + truncnorm(0, 0.3, -0.1, 0.1).rvs(), 
-            self.safety_value,
-            self.throttle,
-            self.steering
-        ]
+        sensor_msg.data = [elapsed_time.to_sec(), 0.0, 0.0, 0.0, 0.0, z_next[7], z_next[5], self.safety_value,self.throttle,self.steering]
         self.pub_sens_input.publish(sensor_msg)
 
 
         #publish messages for rviz visualization purposes
-        vx_with_noise = self.state[3] + truncnorm(0, 0.2, -0.1, 0.1).rvs()
-        vy_with_noise = self.state[4] + truncnorm(0, 0.2, -0.1, 0.1).rvs()
-        omega_with_noise = self.state[5] + truncnorm(0, 0.2, -0.1, 0.1).rvs()
-
-        self.vx_publisher.publish(vx_with_noise)
-        self.vy_publisher.publish(vy_with_noise)
-        self.omega_publisher.publish(omega_with_noise)
+        self.vx_publisher.publish(self.state[3])
+        self.vy_publisher.publish(self.state[4])
+        self.omega_publisher.publish(self.state[5])
 
 
         #publish rviz vehicle visualization
@@ -375,6 +361,7 @@ if __name__ == '__main__':
 
         vehicles_list = [vehicle_1_integrator]
 
+        
 
         #set up GUI manager
         Forward_intergrate_GUI_manager_obj = Forward_intergrate_GUI_manager(vehicles_list)
