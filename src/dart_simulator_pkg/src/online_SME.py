@@ -14,7 +14,7 @@ from remove_duplicate import remove_duplicates
 class SetMermbershipOnline:
     def __init__(self):
         # Initialize the ROS node
-        rospy.init_node('Set_membership_estimation_online', anonymous=True)
+        rospy.init_node('vicon_and_sensor_listener', anonymous=True)
 
         # Set processing rate to 100 Hz (adjustable)
         self.rate = rospy.Rate(100)  # Process data every 0.01 seconds
