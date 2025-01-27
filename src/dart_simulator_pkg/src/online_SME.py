@@ -6,14 +6,18 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf.transformations import euler_from_quaternion
 from std_msgs.msg import Float32MultiArray, Float32
 from funct_fin import steer_angle
+from continuos_matrix_online import continuous_matrices
+from discretization_function_online import compute_discrete_function_terms_single_step_euler
+from remove_duplicate import remove_duplicates
+
 
 class ViconAndSensorListener:
     def __init__(self):
         # Initialize the ROS node
         rospy.init_node('vicon_and_sensor_listener', anonymous=True)
 
-        # Set processing rate to 10 Hz (adjustable)
-        self.rate = rospy.Rate(10)  # Process data every 0.1 seconds
+        # Set processing rate to 100 Hz (adjustable)
+        self.rate = rospy.Rate(100)  # Process data every 0.01 seconds
 
         # Initialize placeholders for the messages
         self.pose_data = None
@@ -23,6 +27,12 @@ class ViconAndSensorListener:
         # Variables to store current and previous values of z and u
         self.z_prev = None
         self.u_prev = None
+
+        self.z_minus1 = None
+        self.u_minus1 = None
+
+        self.A_i_minus1 = None
+        self.b_i_minus1 = None
 
         # Subscribe to the topics
         rospy.Subscriber('/vicon/jetracer1', PoseWithCovarianceStamped, self.pose_callback)
@@ -47,6 +57,11 @@ class ViconAndSensorListener:
     def process_data(self):
         """Main processing loop running at a controlled rate."""
         while not rospy.is_shutdown():
+
+            ### ========================================== ###
+            ###           PARAMETER ACQUISITION            ###
+            ### ========================================== ###
+
             if self.pose_data is None or self.sensor_data is None or self.vy_data is None:
                 rospy.loginfo("Waiting for all sensor data...")
                 self.rate.sleep()
@@ -73,25 +88,96 @@ class ViconAndSensorListener:
 
             delta = steer_angle(steering_input)
 
-            # Store current values
-            z_new = np.array([[vx], [vy], [w]])
-            u_new = np.array([th, delta])
+            # Store current states and inputs
+            z = np.array([[vx], [vy], [w]])
+            u = np.array([[th], [delta]])
+            
 
             # Print current and previous values (before updating)
-            message = (
-                "\n-------------------\n"
-                f"Previous z: {self.z_prev.flatten().tolist() if self.z_prev is not None else 'None'}\n"
-                f"Previous u: {self.u_prev.tolist() if self.u_prev is not None else 'None'}\n"
-                f"Current z: {z_new.flatten().tolist()}\n"
-                f"Current u: {u_new.tolist()}\n"
-                "-------------------\n"
-            )
-            rospy.loginfo(message)
+            # message = (
+            #     "\n-------------------\n"
+            #     f"Current z: {z.flatten().tolist()}\n"
+            #     f"Past z: {self.z_minus1.flatten().tolist()}\n"
+            #     f"Current u: {u.tolist()}\n"
+            #     "-------------------\n"
+            # )
+            if self.z_minus1 is None and self.u_minus1 is None:
+                self.z_minus1 = z  # Inizializza la variabile alla prima iterazione
+                self.u_minus1 = u
+                
+            # else:
+            #     message = (
+            #         "\n-------------------\n"
+            #         # f"Current z: {z.flatten().tolist()}\n"
+            #         # f"Past z: {self.z_minus1.flatten().tolist()}\n"
+            #         f"Current u: {u.tolist()}\n"
+            #         f"Past u: {self.u_minus1}\n"
+            #         "-------------------\n"
+            #     )
+            #     rospy.loginfo(message)
 
-            # Update previous values
-            self.z_prev = z_new
-            self.u_prev = u_new
 
+
+
+            # # Update previous values
+            # self.z_prev = z_new
+            # self.u_prev = u_new
+
+            ## COMPUTE THE AUTONOUS AND INPUT MATRIX IN CONTINUOUS TIME
+            F_i, G_i = continuous_matrices(self.z_minus1, self.u_minus1)
+
+            # message = (
+            #     "\n-------------------\n"
+            #     f"F_cont {F_i}\n"
+            #     f"G_cont {G_i}\n"
+            #     "-------------------\n"
+            # )
+            # rospy.loginfo(message)
+
+            A_i, b_i = compute_discrete_function_terms_single_step_euler(self.z_minus1, F_i, G_i)
+
+            if self.A_i_minus1 is None and self.b_i_minus1 is None:
+                A = A_i
+                b = b_i
+
+            else:
+                A = np.concatenate((A_i, self.A_i_minus1), axis=0)
+                b = np.concatenate((b_i, self.b_i_minus1), axis=0)
+            
+            valid_mu = []
+            valid_A = []
+            valid_b = []
+            mu_values = np.where(A != 0, b / A, np.inf)  # Skip division where A = 0
+
+            for idx, mu in enumerate(mu_values.flatten()):
+                satisfy_all = True
+                for j in range(len(A)):
+                    if not (A[j] * mu <= b[j] + 1e-6):
+                        satisfy_all = False
+                        break
+                
+                if satisfy_all:
+                    valid_A.append(A[idx])
+                    valid_b.append(b[idx])
+                    valid_mu.append(max(mu, 0))  # Ensure non-negative mu
+
+            valid_mu = remove_duplicates(valid_mu, 1e-3)
+            valid_mu = np.sort(valid_mu)
+            
+            if valid_mu.shape == 2:
+                rospy.loginfo(f"mu ∈ [{valid_mu[0]:.4f}, {valid_mu[1]:.4f}] ")
+            else:
+                rospy.loginfo(f"mu = {valid_mu}") 
+
+            if valid_A and valid_b:
+                self.A_i_minus1 = np.vstack(valid_A)
+                self.b_i_minus1 = np.vstack(valid_b)
+                      
+
+            
+            # uptade values
+            self.z_minus1 = z
+            self.u_minus1 = u           
             # Sleep to maintain the desired processing frequency
             self.rate.sleep()
 

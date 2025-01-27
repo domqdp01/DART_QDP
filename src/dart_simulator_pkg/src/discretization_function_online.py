@@ -2,7 +2,7 @@ import numpy as np
 
 def compute_discrete_function_terms_single_step_euler(
     previous_state_measurement, 
-    previous_control_input, 
+    # previous_control_input, 
     autonomous_function, 
     input_function
 ):
@@ -39,4 +39,19 @@ def compute_discrete_function_terms_single_step_euler(
     # Compute x_discrete
     x_discrete = f_discrete + g_discrete
 
-    return f_discrete, g_discrete, x_discrete
+    n_state = 3                       # number of states
+    I_n = np.eye(n_state, dtype=int)  # dim (3,3)
+    H = np.vstack([I_n, -I_n])        # dim (6,3)
+
+    d_up = 0.01                 # noise upper bound
+    d_low = - d_up                    # noise lower bound
+    h_d = np.concatenate([
+        np.full((n_state, 1), d_up),
+        np.full((n_state, 1), -d_low)
+        ])
+    
+    A_i = - H @ g_discrete
+    b_i = h_d - H @ x_discrete + H @ f_discrete
+    
+
+    return A_i, b_i

@@ -1,7 +1,7 @@
 import numpy as np
 from funct_fin import steer_angle, rolling_friction, motor_force, F_friction_due_to_steering, slip_angles, lateral_tire_forces, friction
 
-def continuous_matrices(index, steering_input, vx, vy, w, tau):
+def continuous_matrices(z, u):
     """
     Computes the continuous-time matrices for lateral and longitudinal dynamics.
 
@@ -27,29 +27,28 @@ def continuous_matrices(index, steering_input, vx, vy, w, tau):
     Jz = 0.006513
 
     # LATERAL DYNAMICS
-    delta0 = steer_angle(steering_input[index])
-    alpha_f0, alpha_r0 = slip_angles(vx[index], vy[index], w[index], delta0)
+    alpha_f0, alpha_r0 = slip_angles(z[0], z[1], z[2], u[1])
     F_y_f_0, F_y_r_0 = lateral_tire_forces(alpha_f0, alpha_r0)
 
     # LONGITUDINAL DYNAMICS
-    F_rolling_0 = rolling_friction(vx[index])
-    F_m_0 = motor_force(tau[index], vx[index])
-    F_fric_0 = F_friction_due_to_steering(delta0, vx[index])
-    F_x_0 = np.sum(F_rolling_0) + np.sum(F_m_0) + np.sum(F_fric_0)
-    F_x_0_f = Cf * F_x_0
-    F_x_0_r = Cr * F_x_0
+    F_rolling_0 = rolling_friction(z[0])
+    F_m_0 = motor_force(u[1], z[0])
+    F_x_0 = F_rolling_0 + F_m_0
+    F_x_0_f = F_x_0 / 2
+    F_x_0_r = F_x_0 / 2
+
 
     # SET UP MATRICES
     F_0 = np.array([
-        1/m * (F_x_0_r + F_x_0_f * np.cos(delta0)) + w[index] * vy[index],
-        1/m * (F_x_0_f * np.sin(delta0)) - w[index] * vx[index],
-        lf/Jz * (F_x_0_f * np.sin(delta0))
+        1/m * (F_x_0_r + F_x_0_f * np.cos(u[1])) + z[2] * z[1],
+        1/m * (F_x_0_f * np.sin(u[1])) - z[2] * z[0],
+        lf/Jz * (F_x_0_f * np.sin(u[1]))
     ]).reshape(-1, 1)
 
     G_0 = np.array([
-        -1/m * F_y_f_0 * np.sin(delta0),
-        1/m * (F_y_r_0 + F_y_f_0 * np.cos(delta0)),
-        1/Jz * (lf * F_y_f_0 * np.cos(delta0) - lr * F_y_r_0)
+        -1/m * F_y_f_0 * np.sin(u[1]),
+        1/m * (F_y_r_0 + F_y_f_0 * np.cos(u[1])),
+        1/Jz * (lf * F_y_f_0 * np.cos(u[1]) - lr * F_y_r_0)
     ]).reshape(-1, 1)
 
     return F_0, G_0

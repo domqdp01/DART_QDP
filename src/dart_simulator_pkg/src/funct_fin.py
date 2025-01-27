@@ -109,7 +109,6 @@ def slip_angles(vx,vy,w,steering_angle):
 #     return F_y_f, F_y_r
 
 
-
 def lateral_tire_forces(alpha_f,alpha_r):
     #front tire Pacejka tire model
     d =  2.9751534461975098

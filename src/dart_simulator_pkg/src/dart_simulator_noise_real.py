@@ -79,10 +79,10 @@ def lateral_tire_forces(alpha_f,alpha_r):
     #rear tire linear model
     c_r = 0.38921865820884705
 
-    F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f)))) + truncnorm(2 * n_low, n_up, loc=0, scale=1).rvs()
-    # F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f)))) + np.random.uniform(7 * n_low, 0)
-    F_y_r = c_r * alpha_r + truncnorm(n_low, 0.75 * n_up, loc=0, scale=0.5).rvs()
-    # F_y_r = c_r * alpha_r + np.random.uniform(6 * n_low, 4 * n_up)
+    # F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f)))) + truncnorm(2 * n_low, n_up, loc=0, scale=1).rvs()
+    F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f)))) + np.random.uniform(7 * n_low, 0)
+    # F_y_r = c_r * alpha_r + truncnorm(n_low, 0.75 * n_up, loc=0, scale=0.5).rvs()
+    F_y_r = c_r * alpha_r + np.random.uniform(6 * n_low, 4 * n_up)
     return F_y_f, F_y_r
 
 
@@ -136,11 +136,11 @@ def dynamic_bicycle(t,z):  # RK4 wants a function that takes as input time and s
     alpha_f,alpha_r =slip_angles(vx,vy,w,steering_angle)
 
     #evaluate forward force
-    Fx_wheels = motor_force(th,vx) + friction(vx) + truncnorm(n_low * 0.75, n_up * 0.75, loc=0, scale=0.9).rvs()
-    # Fx_wheels = motor_force(th,vx) + friction(vx) 
+    # Fx_wheels = motor_force(th,vx) + friction(vx) + truncnorm(n_low * 0.75, n_up * 0.75, loc=0, scale=0.9).rvs()
+    Fx_wheels = motor_force(th,vx) + friction(vx) 
     # assuming equally shared force among wheels
-    # Fx_f = Fx_wheels/2 + np.random.uniform(7 * n_low, 5 * n_up)
-    # Fx_r = Fx_wheels/2 + + np.random.uniform(6 * n_low, 6 * n_up)
+    Fx_f = Fx_wheels/2 + np.random.uniform(7 * n_low, 5 * n_up)
+    Fx_r = Fx_wheels/2 + + np.random.uniform(6 * n_low, 6 * n_up)
     Fx_f = Fx_wheels/2
     Fx_r = Fx_wheels/2      
 
