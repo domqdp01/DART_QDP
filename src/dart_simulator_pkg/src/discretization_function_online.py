@@ -8,19 +8,13 @@ def compute_discrete_function_terms_single_step_euler(
 ):
     """
     Single step Euler integration for input map g(u) and autonomous map f(x).
-    Computes: x_{k+1} = x_k + dt*f(x_k) + dt*g(u_k)
+    Computes: x_{k} = x_k-1 + dt*f(x_k-1) + dt*g(u_k-1)
     
     Args:
         previous_state_measurement (np.ndarray): Previous state (x_k-1).
-        previous_control_input (np.ndarray): Previous control input (u_k-1).
         autonomous_function: Function f(x) for the autonomous map.
         input_function: Function g(u) for the input map.
 
-    Returns:
-        tuple: (f_discrete, g_discrete, x_discrete)
-            - f_discrete (np.ndarray): Discrete autonomous map f(x_k).
-            - g_discrete (np.ndarray): Discrete input map g(u_k).
-            - x_discrete (np.ndarray): Updated state x_{k+1}.
     """
     controller_timestep = 0.2
     integration_timestep = 0.01

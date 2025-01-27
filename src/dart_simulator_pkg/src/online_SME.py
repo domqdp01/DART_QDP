@@ -11,10 +11,10 @@ from discretization_function_online import compute_discrete_function_terms_singl
 from remove_duplicate import remove_duplicates
 
 
-class ViconAndSensorListener:
+class SetMermbershipOnline:
     def __init__(self):
         # Initialize the ROS node
-        rospy.init_node('vicon_and_sensor_listener', anonymous=True)
+        rospy.init_node('Set_membership_estimation_online', anonymous=True)
 
         # Set processing rate to 100 Hz (adjustable)
         self.rate = rospy.Rate(100)  # Process data every 0.01 seconds
@@ -58,10 +58,7 @@ class ViconAndSensorListener:
         """Main processing loop running at a controlled rate."""
         while not rospy.is_shutdown():
 
-            ### ========================================== ###
-            ###           PARAMETER ACQUISITION            ###
-            ### ========================================== ###
-
+            ### ===================SetMermbershipOnline:
             if self.pose_data is None or self.sensor_data is None or self.vy_data is None:
                 rospy.loginfo("Waiting for all sensor data...")
                 self.rate.sleep()
@@ -91,49 +88,21 @@ class ViconAndSensorListener:
             # Store current states and inputs
             z = np.array([[vx], [vy], [w]])
             u = np.array([[th], [delta]])
-            
 
-            # Print current and previous values (before updating)
-            # message = (
-            #     "\n-------------------\n"
-            #     f"Current z: {z.flatten().tolist()}\n"
-            #     f"Past z: {self.z_minus1.flatten().tolist()}\n"
-            #     f"Current u: {u.tolist()}\n"
-            #     "-------------------\n"
-            # )
+            # Initialization of the vectors
             if self.z_minus1 is None and self.u_minus1 is None:
-                self.z_minus1 = z  # Inizializza la variabile alla prima iterazione
+                self.z_minus1 = z  
                 self.u_minus1 = u
-                
-            # else:
-            #     message = (
-            #         "\n-------------------\n"
-            #         # f"Current z: {z.flatten().tolist()}\n"
-            #         # f"Past z: {self.z_minus1.flatten().tolist()}\n"
-            #         f"Current u: {u.tolist()}\n"
-            #         f"Past u: {self.u_minus1}\n"
-            #         "-------------------\n"
-            #     )
-            #     rospy.loginfo(message)
 
+            ### ===================================================== ###
+            ###           UNFALISIFIED PARAMETER SET    Δ_K           ###
+            ### ===================================================== ###
 
-
-
-            # # Update previous values
-            # self.z_prev = z_new
-            # self.u_prev = u_new
 
             ## COMPUTE THE AUTONOUS AND INPUT MATRIX IN CONTINUOUS TIME
             F_i, G_i = continuous_matrices(self.z_minus1, self.u_minus1)
-
-            # message = (
-            #     "\n-------------------\n"
-            #     f"F_cont {F_i}\n"
-            #     f"G_cont {G_i}\n"
-            #     "-------------------\n"
-            # )
-            # rospy.loginfo(message)
-
+            
+            ## COMPUTE THE AUTONOUS AND INPUT MATRIX IN DISCRETE TIME
             A_i, b_i = compute_discrete_function_terms_single_step_euler(self.z_minus1, F_i, G_i)
 
             if self.A_i_minus1 is None and self.b_i_minus1 is None:
@@ -143,6 +112,10 @@ class ViconAndSensorListener:
             else:
                 A = np.concatenate((A_i, self.A_i_minus1), axis=0)
                 b = np.concatenate((b_i, self.b_i_minus1), axis=0)
+
+            ### ===================================================== ###
+            ###             FEASIBLE PARAMETER SET      θ_K           ###
+            ### ===================================================== ###
             
             valid_mu = []
             valid_A = []
@@ -165,9 +138,9 @@ class ViconAndSensorListener:
             valid_mu = np.sort(valid_mu)
             
             if valid_mu.shape == 2:
-                rospy.loginfo(f"mu ∈ [{valid_mu[0]:.4f}, {valid_mu[1]:.4f}] ")
+                rospy.loginfo(f"μ ∈ [{valid_mu[0]:.4f}, {valid_mu[1]:.4f}] ")
             else:
-                rospy.loginfo(f"mu = {valid_mu}") 
+                rospy.loginfo(f"μ = {valid_mu}") 
 
             if valid_A and valid_b:
                 self.A_i_minus1 = np.vstack(valid_A)
@@ -183,7 +156,7 @@ class ViconAndSensorListener:
 
 if __name__ == '__main__':
     try:
-        ViconAndSensorListener()
+        SetMermbershipOnline()
     except rospy.ROSInterruptException:
         pass
 
