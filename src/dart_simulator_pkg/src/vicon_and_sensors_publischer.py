@@ -6,7 +6,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf.transformations import euler_from_quaternion
 from std_msgs.msg import Float32MultiArray, Float32
 from funct_fin import steer_angle, rolling_friction, motor_force, F_friction_due_to_steering, slip_angles, lateral_tire_forces, friction
-from discretization_function import compute_discrete_function_terms_single_step_euler
+from discretization_function_online import compute_discrete_function_terms_single_step_euler
 from continuous_matrix_function import continuous_matrices
 
 
