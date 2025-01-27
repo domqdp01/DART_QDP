@@ -165,7 +165,7 @@ class SetMembershipOnline:
             mu_values = np.where(A != 0, b / A, np.inf)
             self.mu_i = b_i/A_i
 
-            rospy.loginfo(self.mu_i)
+            # rospy.loginfo(self.mu_i)
             self.mu_i_max = self.mu_i[5]
             self.mu_i_min = self.mu_i[2]
 
