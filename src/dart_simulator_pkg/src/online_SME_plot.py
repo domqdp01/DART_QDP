@@ -207,3 +207,5 @@ if __name__ == '__main__':
         SetMembershipOnline()
     except rospy.ROSInterruptException:
         pass
+
+## 27/01 16:42
