@@ -20,7 +20,7 @@ desc=See the [[dynamic_reconfigure]] package for details on dynamically reconfig
 3.type= double
 3.desc=Orientation to reset to in radians Range: -3.15 to 3.15
 4.name= ~dynamic_model_choice
-4.default= 1
+4.default= 2
 4.type= int
 4.desc=Model choice which is edited via an enum Possible values are: Kinematic_bicycle (1): sets the dynamic model to kinematic bicycle, Dynamic_bicycle (2): sets the dynamic model to dynamic bycicle
 }

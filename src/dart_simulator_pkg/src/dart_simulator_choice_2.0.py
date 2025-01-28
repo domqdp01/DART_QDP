@@ -185,8 +185,8 @@ def lateral_tire_forces_noise(alpha_f,alpha_r):
     #rear tire linear model
     c_r = 0.38921865820884705
 
-    F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f)))) + truncnorm(n_low, n_up, loc=0, scale=0.01).rvs()
-    F_y_r = c_r * alpha_r + truncnorm(n_low, n_up, loc=0, scale=0.01).rvs()
+    F_y_f = d * np.sin(c * np.arctan(b * alpha_f - e * (b * alpha_f -np.arctan(b * alpha_f)))) + truncnorm(n_low, n_up, loc=0, scale=0.1).rvs()
+    F_y_r = c_r * alpha_r + truncnorm(n_low, n_up, loc=0, scale=0.1).rvs()
     return F_y_f, F_y_r
 
 def kinematic_bicycle_noise(t,z):  # RK4 wants a function that takes as input time and state
@@ -202,7 +202,7 @@ def kinematic_bicycle_noise(t,z):  # RK4 wants a function that takes as input ti
     steering_angle = steer_angle(u[1])
 
     #evaluate forward force
-    Fx = motor_force(th,vx) + friction(vx) + truncnorm(n_low * 0.75, n_up * 0.75, loc=0, scale=0.9).rvs()
+    Fx = motor_force(th,vx) + friction(vx) + truncnorm(n_low, n_up, loc=0, scale=0.2).rvs()
 
     acc_x =  Fx / m # acceleration in the longitudinal direction
 
@@ -237,7 +237,7 @@ def dynamic_bicycle_noise(t,z):  # RK4 wants a function that takes as input time
     alpha_f,alpha_r =slip_angles(vx,vy,w,steering_angle)
 
     #evaluate forward force
-    Fx_wheels = motor_force(th,vx) + friction(vx) + truncnorm(n_low, n_up, loc=0, scale=0.01).rvs()
+    Fx_wheels = motor_force(th,vx) + friction(vx) + truncnorm(n_low, n_up, loc=0, scale=0.1).rvs()
     # assuming equally shared force among wheels
     Fx_f = Fx_wheels/2
     Fx_r = Fx_wheels/2
@@ -317,7 +317,7 @@ class Forward_intergrate_GUI_manager_noise:
     def __init__(self, vehicles_list):
         #fory dynamic parameter change using rqt_reconfigure GUI
         self.vehicles_list = vehicles_list
-        srv = Server(dart_simulator_guiConfig, self.reconfig_callback_forwards_integrate)
+        srv = Server(dart_simulator_guiConfig, self.reconfig_callback_forwards_integrate_noise)
         
 
 
@@ -622,7 +622,7 @@ if __name__ == '__main__':
 
 
             #set up GUI manager
-            Forward_intergrate_GUI_manager_obj = Forward_intergrate_GUI_manager_noise(vehicles_list)
+            Forward_intergrate_GUI_manager_obj = Forward_intergrate_GUI_manager(vehicles_list)
 
             # forwards integrate
             rate = rospy.Rate(1 / dt_int)
@@ -647,7 +647,7 @@ if __name__ == '__main__':
 
 
             #set up GUI manager
-            Forward_intergrate_GUI_manager_obj = Forward_intergrate_GUI_manager(vehicles_list)
+            Forward_intergrate_GUI_manager_obj = Forward_intergrate_GUI_manager_noise(vehicles_list)
 
             # forwards integrate
             rate = rospy.Rate(1 / dt_int)

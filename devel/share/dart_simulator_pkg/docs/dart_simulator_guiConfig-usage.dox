@@ -5,7 +5,7 @@
   <param name="reset_state_x" type="double" value="0.0" />
   <param name="reset_state_y" type="double" value="0.0" />
   <param name="reset_state_theta" type="double" value="0.0" />
-  <param name="dynamic_model_choice" type="int" value="1" />
+  <param name="dynamic_model_choice" type="int" value="2" />
 </node>
 \endverbatim
 

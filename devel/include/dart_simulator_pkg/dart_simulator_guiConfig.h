@@ -454,7 +454,7 @@ dart_simulator_guiConfig::GroupDescription<dart_simulator_guiConfig::DEFAULT, da
 //#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
       __max__.dynamic_model_choice = 2;
 //#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
-      __default__.dynamic_model_choice = 1;
+      __default__.dynamic_model_choice = 2;
 //#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
       Default.abstract_parameters.push_back(dart_simulator_guiConfig::AbstractParamDescriptionConstPtr(new dart_simulator_guiConfig::ParamDescription<int>("dynamic_model_choice", "int", 0, "Model choice which is edited via an enum", "{'enum': [{'name': 'Kinematic_bicycle', 'type': 'int', 'value': 1, 'srcline': 17, 'srcfile': '/home/domenico/DART_QDP/src/dart_simulator_pkg/cfg/dart_simulator_gui.cfg', 'description': 'sets the dynamic model to kinematic bicycle', 'ctype': 'int', 'cconsttype': 'const int'}, {'name': 'Dynamic_bicycle', 'type': 'int', 'value': 2, 'srcline': 18, 'srcfile': '/home/domenico/DART_QDP/src/dart_simulator_pkg/cfg/dart_simulator_gui.cfg', 'description': 'sets the dynamic model to dynamic bycicle', 'ctype': 'int', 'cconsttype': 'const int'}], 'enum_description': 'An enum to set dynamic model'}", &dart_simulator_guiConfig::dynamic_model_choice)));
 //#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
