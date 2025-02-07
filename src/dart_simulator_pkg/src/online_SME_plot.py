@@ -59,7 +59,7 @@ class SetMembershipOnline:
 
     def setup_plot(self):
         """Configure the plot."""
-        self.fig, self.ax = plt.subplots()
+        self.fig, self.ax = plt.subplots(figsize=(8,6))
         self.ax.set_xlabel('')
         self.ax.set_ylabel('μ')
         self.ax.set_ylim(0.7, 1.3)
@@ -86,7 +86,7 @@ class SetMembershipOnline:
         self.fill_between_delta = self.ax.fill_between(
             self.x_data, self.mu_i_min_data, self.mu_i_max_data, color='blue', alpha=0.5, label='Δ_k')
 
-        self.ax.legend()
+        self.ax.legend(loc='upper left')
         plt.ion()  # Interactive mode to prevent blocking
 
     def run_plot(self):
@@ -112,7 +112,7 @@ class SetMembershipOnline:
                 self.x_data, self.mu_i_min, self.mu_i_max, color='blue', alpha=0.2
             )
 
-            self.ax.set_title(f'μ ∈ [{mu_min:.4f}, {mu_max:.4f}]')
+            self.ax.set_title(f'μ ∈ [{mu_min:.3f}, {mu_max:.3f}]')
             # self.ax.set_ylim(min(0, mu_min - 0.1), max(2, mu_max + 0.1))
 
             plt.pause(0.1)  # Keep the plot updated without blocking other windows
@@ -185,9 +185,9 @@ class SetMembershipOnline:
             valid_mu = np.sort(valid_mu)
 
             if len(valid_mu) == 2:
-                rospy.loginfo(f"μ ∈ [{valid_mu[0]:.4f}, {valid_mu[1]:.4f}] ")
+                rospy.loginfo(f"μ ∈ [{valid_mu[0]:.3f}, {valid_mu[1]:.3f}] ")
             else:
-                rospy.loginfo(f"μ = {valid_mu[0]:.4f}")
+                rospy.loginfo(f"μ = {valid_mu[0]:.3f}")
 
             with self.mu_lock:
                 self.valid_mu = valid_mu if len(valid_mu) == 2 else [valid_mu[0], valid_mu[0]]

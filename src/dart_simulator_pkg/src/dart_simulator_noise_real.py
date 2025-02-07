@@ -13,7 +13,7 @@ from dart_simulator_pkg.cfg import dart_simulator_guiConfig
 from tf.transformations import quaternion_from_euler
 from scipy.stats import truncnorm
 
-n_up = 0.5
+n_up = 0.3
 n_low = - n_up
 # define dynamic models
 # hard coded vehicle parameters

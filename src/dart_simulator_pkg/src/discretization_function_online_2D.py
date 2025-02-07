@@ -30,8 +30,9 @@ def compute_discrete_function_terms_single_step_euler(
     # Compute g_discrete
     g_discrete = integration_timestep * input_function
 
+    ones_vector = np.ones(2)
     # Compute x_discrete
-    x_discrete = f_discrete + g_discrete
+    x_discrete = f_discrete + g_discrete @ ones_vector.reshape(-1, 1)
 
     n_state = 3                       # number of states
     I_n = np.eye(n_state, dtype=int)  # dim (3,3)
