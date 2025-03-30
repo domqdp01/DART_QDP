@@ -54,6 +54,7 @@ class leader_longitudinal_controller_class:
 		#subscribers
 		self.v_encoder_subscriber = rospy.Subscriber('sensors_and_input_' + str(car_number), Float32MultiArray, self.sensors_and_input_callback)
 		self.v_ref_subscriber = rospy.Subscriber('v_ref_' + str(car_number), Float32, self.v_ref_callback)
+		# self.v_ref_subscriber = rospy.Subscriber('vx_' + str(car_number), Float32, self.v_ref_callback)
 		rospy.Subscriber('safety_value', Float32, self.safety_callback)
 
 		# set up feed forward action

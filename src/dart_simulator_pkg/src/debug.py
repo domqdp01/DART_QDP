@@ -239,7 +239,8 @@ class SetMermbershipOnline:
             if Hp.shape[0] > 3 and hp.shape[0] > 3:
                 mu_2_low = hp[3] / Hp[3, 1] if Hp[3, 1] != 0 else 0  # Evita None
 
-            print(f"mu_1 = [{mu_1_low}, {mu_1_up}], mu_2 = [{mu_2_low}, {mu_2_up}]")
+            print("-----------------------------\n"
+                f"mu_1 = [{mu_1_low}, {mu_1_up}], mu_2 = [{mu_2_low}, {mu_2_up}]")
 
             # Evaluanting CURRENT MU
             mu_i_1_up = mu_i_1_low = mu_i_2_up = mu_i_2_low = None  
@@ -256,7 +257,8 @@ class SetMermbershipOnline:
             if Hp_i.shape[0] > 3 and hp_i.shape[0] > 3:
                 mu_i_2_low = hp_i[3] / Hp_i[3, 1] if Hp_i[3, 1] != 0 else 0  # Evita Nones
 
-            print(f"mu_i_1 = [{mu_i_1_low}, {mu_i_1_up}], mu_i_2 = [{mu_i_2_low}, {mu_i_2_up}]")
+            print(f"mu_i_1 = [{mu_i_1_low}, {mu_i_1_up}], mu_i_2 = [{mu_i_2_low}, {mu_i_2_up}]\n"
+                    "-----------------------------------------------------\n")
 
             self.update_plot(mu_1_low, mu_1_up, mu_2_low, mu_2_up, mu_i_1_low, mu_i_1_up, mu_i_2_low, mu_i_2_up)
 

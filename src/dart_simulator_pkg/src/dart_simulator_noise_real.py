@@ -13,7 +13,7 @@ from dart_simulator_pkg.cfg import dart_simulator_guiConfig
 from tf.transformations import quaternion_from_euler
 from scipy.stats import truncnorm
 
-n_up = 0.3
+n_up = 0.5
 n_low = - n_up
 # define dynamic models
 # hard coded vehicle parameters
@@ -141,8 +141,7 @@ def dynamic_bicycle(t,z):  # RK4 wants a function that takes as input time and s
     # assuming equally shared force among wheels
     Fx_f = Fx_wheels/2 + np.random.uniform(7 * n_low, 5 * n_up)
     Fx_r = Fx_wheels/2 + + np.random.uniform(6 * n_low, 6 * n_up)
-    Fx_f = Fx_wheels/2
-    Fx_r = Fx_wheels/2      
+      
 
     # evaluate lateral tire forces
     F_y_f, F_y_r = lateral_tire_forces(alpha_f,alpha_r)
@@ -248,6 +247,16 @@ class Forward_intergrate_vehicle:
         self.vy_publisher = rospy.Publisher('vy_' + str(car_number), Float32, queue_size=10)
         self.omega_publisher = rospy.Publisher('omega_' + str(car_number), Float32, queue_size=10)
 
+        # rospy.Subscriber('steering_' +str(2), Float32, self.callback_steering)
+        # rospy.Subscriber('throttle_' +str(2), Float32, self.callback_throttle)
+        # rospy.Subscriber('safety_value', Float32, self.callback_safety)
+        # self.pub_motion_capture_state = rospy.Publisher('vicon/jetracer' +str(2), PoseWithCovarianceStamped, queue_size=10)
+        # self.pub_sens_input = rospy.Publisher("sensors_and_input_" +str(2), Float32MultiArray, queue_size=1)
+        # # for rviz
+        # self.pub_rviz_vehicle_visualization = rospy.Publisher('rviz_data_' +str(2), PoseStamped, queue_size=10)
+        # self.vx_publisher = rospy.Publisher('vx_' +str(2), Float32, queue_size=10)
+        # self.vy_publisher = rospy.Publisher('vy_' +str(2), Float32, queue_size=10)
+        # self.omega_publisher = rospy.Publisher('omega_' +str(2), Float32, queue_size=10)
 
 
     # Safety callback function

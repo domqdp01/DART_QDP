@@ -125,3 +125,4 @@ def lateral_tire_forces(alpha_f,alpha_r):
 
 
 
+print((m /2.9751534))

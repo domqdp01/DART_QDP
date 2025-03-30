@@ -15,8 +15,8 @@ import numpy as np
 class RecordInputAndSensorData:
     def __init__(self, car_number):
 
-        # self.folder_name = '/DATA/'
-        self.folder_name = '/home/domenico/SET_MEMB_DART/FINAL/'
+        self.folder_name = '/home/domenico/NOISE_PATH' # Percorso assoluto
+        base_path = self.folder_name
 
 
         self.car_number = car_number
@@ -28,18 +28,17 @@ class RecordInputAndSensorData:
         # Initialize variables
         self.sensors_and_input_data = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.vicon_state = [0.0, 0.0, 0.0, 0.0]
-        self.vy = 0.0
 
         # Find the full path and create the folder if it doesn't exist
         self.rospack = rospkg.RosPack()
-        base_path = self.folder_name
         # base_path = self.rospack.get_path('racecar_pkg') + self.folder_name
         self.ensure_directory_exists(base_path)
 
         # Create the file
         date_time = datetime.datetime.now()
         date_time_str = date_time.strftime("%m_%d_%Y_%H_%M_%S")
-        file_name = base_path + self.file_name + 'recording_' + date_time_str + '.csv'
+        file_name = 'dritto_2.5'
+        # file_name = base_path + self.file_name + 'recording_' + date_time_str + '.csv'
         file = open(file_name, 'w+')
         print(file_name)
 
@@ -47,19 +46,13 @@ class RecordInputAndSensorData:
         self.writer = csv.writer(file)
         self.writer.writerow(['elapsed time sensors', 'current', 'voltage', 'acc x (IMU)', 'acc y (IMU)', 'W (IMU)',
                               'vel encoder', 'safety_value', 'throttle', 'steering', 'vicon time', 'vicon x', 
-                              'vicon y', 'vicon yaw', 'vel y'])
+                              'vicon y', 'vicon yaw'])
 
         # ROS topic subscriptions
         rospy.Subscriber('sensors_and_input_' + str(car_number), Float32MultiArray, self.callback_sensors_and_input)
-        rospy.Subscriber('/vicon/jetracer' + str(car_number), PoseWithCovarianceStamped, self.odom_callback)
-        rospy.Subscriber('vy_' + str(car_number), Float32, self.vy_callback)
-        # rospy.Subscriber('/vicon/jetracer' + str(car_number), PoseStamped, self.odom_callback)
+        rospy.Subscriber('/vicon/jetracer' + str(car_number), PoseStamped, self.odom_callback)
 
         rospy.spin()
-
-    def vy_callback(self, msg):
-        self.vy = msg.data
-    
 
     def ensure_directory_exists(self, path):
         """Create the directory if it doesn't exist"""
@@ -74,38 +67,23 @@ class RecordInputAndSensorData:
         self.sensors_and_input_data = np.array(sensors_and_input_data.data)
 
     def odom_callback(self, msg):
-        """Callback for the Vicon topic"""
-        self.pos_x = msg.pose.pose.position.x 
-        self.pos_y = msg.pose.pose.position.y
-        q = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, 
-                      msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+        """Callback per il Vicon topic"""
+        self.pos_x = msg.pose.position.x 
+        self.pos_y = msg.pose.position.y
+        q = np.array([msg.pose.orientation.x, msg.pose.orientation.y, 
+                    msg.pose.orientation.z, msg.pose.orientation.w])
         self.zyx_euler_angles = tf_conversions.transformations.euler_from_quaternion(q, 'rzyx')
         self.yaw = self.zyx_euler_angles[0]
 
         time_now = msg.header.stamp.to_sec()
-        self.vicon_state = [time_now, msg.pose.pose.position.x, msg.pose.pose.position.y, self.zyx_euler_angles[0]]
-        data_line = [*self.sensors_and_input_data, *self.vicon_state, self.vy]
+        self.vicon_state = [time_now, self.pos_x, self.pos_y, self.yaw]
+        data_line = [*self.sensors_and_input_data, *self.vicon_state]
         self.writer.writerow(data_line)
-    # def odom_callback(self, msg):
-    #     """Callback for the Vicon topic"""
-    #     self.pos_x = msg.pose.position.x
-    #     self.pos_y = msg.pose.position.y
-    #     q = np.array([msg.pose.orientation.x, msg.pose.orientation.y, 
-    #                 msg.pose.orientation.z, msg.pose.orientation.w])
-    #     self.zyx_euler_angles = tf_conversions.transformations.euler_from_quaternion(q, 'rzyx')
-    #     self.yaw = self.zyx_euler_angles[0]
-
-    #     time_now = msg.header.stamp.to_sec()
-    #     self.vicon_state = [time_now, self.pos_x, self.pos_y, self.yaw]
-    #     data_line = [*self.sensors_and_input_data, *self.vicon_state]
-    #     self.writer.writerow(data_line)
-
 
 
 if __name__ == '__main__':
     try:
-        car_number = 1
-        # car_number = 2
+        car_number = 2
         recording = RecordInputAndSensorData(car_number)
 
     except rospy.ROSInterruptException:

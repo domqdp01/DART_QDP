@@ -37,7 +37,7 @@ def compute_discrete_function_terms_single_step_euler(
     I_n = np.eye(n_state, dtype=int)  # dim (3,3)
     H = np.vstack([I_n, -I_n])        # dim (6,3)
 
-    d_up = 0.004                 # noise upper bound
+    d_up = 0.006                 # noise upper bound
     d_low = - 0.006                    # noise lower bound
     h_d = np.concatenate([
         np.full((n_state, 1), d_up),
